@@ -16,7 +16,7 @@ def calculate_costs(inputs):
     
     # CodeCommit
     users = inputs['codecommit_users']
-    costs['CodeCommit'] = max(users - 5, 0) * 1.00  # 5 usuarios gratis
+    costs['CodeCommit'] = max(users - 5, 0) * 1.00 
     
     # CodePipeline
     v1_pipelines = inputs['codepipeline_v1']
@@ -34,7 +34,7 @@ def calculate_costs(inputs):
     builds = inputs['codebuild_builds']
     duration = inputs['codebuild_duration']
     duration_sec = duration * 60
-    costs['CodeBuild'] = builds * duration_sec * 0.00002  # 0.09 USD/min
+    costs['CodeBuild'] = builds * duration_sec * 0.00002 
     
     
     # CodeArtifact
@@ -44,9 +44,9 @@ def calculate_costs(inputs):
     outbound = inputs['codeartifact_outbound']
     
     # Cálculos con free tier
-    storage_cost = max(storage - 2, 0) * 0.05  # 2 GB gratis
-    requests_cost = max(requests - 100000, 0) * 0.000005  # 100k requests gratis
-    intra_cost = intra * 0.02  # 0.01 entrada + 0.01 salida
+    storage_cost = max(storage - 2, 0) * 0.05  
+    requests_cost = max(requests - 100000, 0) * 0.000005 
+    intra_cost = intra * 0.02 
     outbound_cost = outbound * 0.09
     
     costs['CodeArtifact'] = storage_cost + requests_cost + intra_cost + outbound_cost
@@ -59,7 +59,6 @@ def calculate_costs(inputs):
     
     return costs
 
-# Configuración de la interfaz
 st.set_page_config(page_title="AWS Cost Calculator", layout="wide")
 st.title("Calculadora de Costos AWS 📊")
 st.markdown("---")
@@ -151,7 +150,6 @@ with st.sidebar:
 costs = calculate_costs(inputs)
 total = sum(costs.values())
 
-# Métricas principales
 st.markdown("### 📈 Métricas Clave")
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -182,22 +180,18 @@ with col2:
                     )
     st.plotly_chart(fig_pie, use_container_width=True)
 
-# Tabla detallada
 st.markdown("---")
 st.markdown("### 📋 Desglose Detallado")
 
-# Primero crear la columna anual
-df['Costo Anual'] = df['Costo'] * 12  # <--- Esto debe ir primero
+df['Costo Anual'] = df['Costo'] * 12  
 
-# Luego crear la fila de totales
 highlight_columns = ['Costo', 'Costo Anual']
 total_row = pd.DataFrame({
     'Servicio': ['TOTAL'],
     'Costo': [df['Costo'].sum()],
-    'Costo Anual': [df['Costo Anual'].sum()]  # <--- Ahora ya existe la columna
+    'Costo Anual': [df['Costo Anual'].sum()] 
 })
 
-# Combinar con dataframe original
 df_with_total = pd.concat([df, total_row], ignore_index=True)
 
 styled_df = df_with_total.style.format({
@@ -206,7 +200,7 @@ styled_df = df_with_total.style.format({
 })
 styled_df = styled_df.highlight_max(subset=highlight_columns, color='#FF0000')
 styled_df = styled_df.highlight_min(subset=highlight_columns, color='#90EE90')
-styled_df = styled_df.apply(highlight_second_max, subset=highlight_columns, color='orange') # Added highlighting for second max
+styled_df = styled_df.apply(highlight_second_max, subset=highlight_columns, color='orange') 
 styled_df = styled_df.set_properties(subset='Servicio', **{'font-weight': 'bold'})
 
 st.dataframe(
