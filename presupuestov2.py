@@ -2,6 +2,15 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+def highlight_second_max(s, color='yellow'):
+    '''
+    Highlights the second largest value in a Series with a given color.
+    '''
+    if s.dtype in ['int64', 'float64']:
+        second_max = s.nlargest(2).iloc[-1]
+        return ['background-color: %s' % color if v == second_max else '' for v in s]
+    return [''] * len(s)
+
 def calculate_costs(inputs):
     costs = {}
     
@@ -26,7 +35,7 @@ def calculate_costs(inputs):
     duration = inputs['codebuild_duration']
     duration_sec = duration * 60
     costs['CodeBuild'] = builds * duration_sec * 0.00002  # 0.09 USD/min
-    costs['CodeBuild'] = costs['CodeBuild'] + 0.60
+    
     
     # CodeArtifact
     storage = inputs['codeartifact_storage']
@@ -41,6 +50,7 @@ def calculate_costs(inputs):
     outbound_cost = outbound * 0.09
     
     costs['CodeArtifact'] = storage_cost + requests_cost + intra_cost + outbound_cost
+    costs['CodeArtifact'] = costs['CodeArtifact'] + 0.60
     
     # CodeDeploy
     instances = inputs['codedeploy_instances']
@@ -176,19 +186,35 @@ with col2:
 st.markdown("---")
 st.markdown("### 📋 Desglose Detallado")
 
-highlight_columns = ['Costo', 'Costo Anual']
+# Primero crear la columna anual
+df['Costo Anual'] = df['Costo'] * 12  # <--- Esto debe ir primero
 
-df['Costo Anual'] = df['Costo'] * 12
+# Luego crear la fila de totales
+highlight_columns = ['Costo', 'Costo Anual']
+total_row = pd.DataFrame({
+    'Servicio': ['TOTAL'],
+    'Costo': [df['Costo'].sum()],
+    'Costo Anual': [df['Costo Anual'].sum()]  # <--- Ahora ya existe la columna
+})
+
+# Combinar con dataframe original
+df_with_total = pd.concat([df, total_row], ignore_index=True)
+
+styled_df = df_with_total.style.format({
+    'Costo': '${:,.2f}',
+    'Costo Anual': '${:,.2f}'
+})
+styled_df = styled_df.highlight_max(subset=highlight_columns, color='#FF0000')
+styled_df = styled_df.highlight_min(subset=highlight_columns, color='#90EE90')
+styled_df = styled_df.apply(highlight_second_max, subset=highlight_columns, color='orange') # Added highlighting for second max
+styled_df = styled_df.set_properties(subset='Servicio', **{'font-weight': 'bold'})
+
 st.dataframe(
-    df.style.format({
-        'Costo': '${:,.2f}',
-        'Costo Anual': '${:,.2f}'
-    })
-    .highlight_max(subset=highlight_columns, color='#FF0000')
-    .highlight_min(subset=highlight_columns, color='#90EE90'),
+    styled_df,
     use_container_width=True,
-    height=400
+    height=450
 )
+
 
 # Explicación de cálculos
 with st.expander("🧮 Detalles de Cálculo"):
