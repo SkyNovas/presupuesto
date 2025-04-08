@@ -24,7 +24,9 @@ def calculate_costs(inputs):
     # CodeBuild
     builds = inputs['codebuild_builds']
     duration = inputs['codebuild_duration']
-    costs['CodeBuild'] = builds * duration * 0.09  # 0.09 USD/min
+    duration_sec = duration * 60
+    costs['CodeBuild'] = builds * duration_sec * 0.00002  # 0.09 USD/min
+    costs['CodeBuild'] = costs['CodeBuild'] + 0.60
     
     # CodeArtifact
     storage = inputs['codeartifact_storage']
@@ -60,43 +62,43 @@ with st.sidebar:
         # CodeCommit
         'codecommit_users': st.number_input(
             "CodeCommit - Usuarios activos", 
-            0, 1000, 500,
+            0, 10000, 500,
             help="Primeros 5 usuarios gratuitos"
         ),
         
         # CodePipeline
         'codepipeline_v1': st.number_input(
             "CodePipeline V1 - Pipelines activos", 
-            0, 500, 0,
+            0, 50000, 0,
             help="Primer pipeline gratuito"
         ),
         'codepipeline_v2': st.number_input(
             "CodePipeline V2 - Minutos ejecución", 
-            0, 100000, 0,
+            0, 100000, 100000,
             help="Primeros 100 minutos gratuitos"
         ),
         
         # CodeGuru
         'codeguru_repos': st.number_input(
             "CodeGuru - Repositorios", 
-            1, 500, 1,
+            1, 5000, 500,
             help="Número de repositorios analizados"
         ),
         'codeguru_lines': st.number_input(
             "CodeGuru - Líneas/repositorio", 
-            1, 1000000, 1000,
+            1, 1000000, 10000,
             help="Líneas de código por repositorio"
         ),
         
         # CodeBuild
         'codebuild_builds': st.number_input(
             "CodeBuild - Builds/mes", 
-            0, 100000, 1,
+            0, 10000000, 100000,
             help="Número total de builds mensuales"
         ),
         'codebuild_duration': st.number_input(
             "CodeBuild - Duración (min)", 
-            1, 600, 10,
+            0, 600, 5,
             help="Duración promedio por build"
         ),
         
@@ -125,12 +127,12 @@ with st.sidebar:
         # CodeDeploy
         'codedeploy_instances': st.number_input(
             "CodeDeploy - Instancias", 
-            0, 1000, 0,
+            0, 1000, 1,
             help="Número de instancias desplegadas"
         ),
         'codedeploy_deployments': st.number_input(
             "CodeDeploy - Despliegues/mes", 
-            0, 100000, 0,
+            0, 1000000, 100000,
             help="Despliegues mensuales por instancia"
         )
     }
@@ -228,22 +230,3 @@ with st.expander("🧮 Detalles de Cálculo"):
 
 st.markdown("---")
 st.markdown("_* Los precios están basados en la región US East (N. Virginia)_")
-
-# Instrucciones para ejecutar
-with st.expander("🚀 Cómo Ejecutar la Aplicación"):
-    st.markdown("""
-    1. Instalar dependencias:
-    ```bash
-    pip install streamlit pandas plotly
-    ```
-    
-    2. Ejecutar la aplicación:
-    ```bash
-    streamlit run app.py --server.port 8501 --server.address 0.0.0.0
-    ```
-    
-    3. Acceder desde:
-    ```
-    http://localhost:8501
-    ```
-    """)
