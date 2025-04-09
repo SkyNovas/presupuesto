@@ -64,7 +64,7 @@ st.markdown("---")
 
 # --- Selección de entornos para comparar ---
 st.header("🔍 Comparación de Entornos")
-environments = ["Producción", "Desarrollo (DEV)", "Pruebas (UAT)"]
+environments = ["Producción", "Desarrollo (DEV)", "Pruebas (UAT)", "QA"]
 selected_environments = st.multiselect(
     "Seleccionar Entornos a Comparar",
     environments,
@@ -80,19 +80,75 @@ with st.sidebar:
     for env in environments:
         with st.expander(f"Configuración {env}"):
             environment_inputs[env] = {
-                'codecommit_users': st.number_input(f"{env} - CodeCommit - Usuarios activos", 0, 10000, 125 if env == "Producción" else (500 if env == "Desarrollo (DEV)" else 250), help="Primeros 5 usuarios gratuitos", key=f"{env}_codecommit_users"),
-                'codepipeline_v1': st.number_input(f"{env} - CodePipeline V1 - Pipelines activos", 0, 50000, 0, help="Primer pipeline gratuito", key=f"{env}_codepipeline_v1"),
-                'codepipeline_v2': st.number_input(f"{env} - CodePipeline V2 - Minutos ejecución", 0, 100000, 25000 if env == "Producción" else (100000 if env == "Desarrollo (DEV)" else 50000), help="Primeros 100 minutos gratuitos", key=f"{env}_codepipeline_v2"),
-                'codeguru_repos': st.number_input(f"{env} - CodeGuru - Repositorios", 1, 5000, 250 if env == "Producción" else (500 if env == "Desarrollo (DEV)" else 125), help="Número de repositorios analizados", key=f"{env}_codeguru_repos"),
-                'codeguru_lines': st.number_input(f"{env} - CodeGuru - Líneas/repositorio", 1, 1000000, 10000 if env == "Producción" else (10000 if env == "Desarrollo (DEV)" else 10000), help="Líneas de código por repositorio", key=f"{env}_codeguru_lines"),
-                'codebuild_builds': st.number_input(f"{env} - CodeBuild - Builds/mes", 0, 10000000, 25000 if env == "Producción" else (100000 if env == "Desarrollo (DEV)" else 50000), help="Número total de builds mensuales", key=f"{env}_codebuild_builds"),
-                'codebuild_duration': st.number_input(f"{env} - CodeBuild - Duración (min)", 0, 600, 5 if env == "Producción" else (5 if env == "Desarrollo (DEV)" else 5), help="Duración promedio por build", key=f"{env}_codebuild_duration"),
-                'codeartifact_storage': st.number_input(f"{env} - CodeArtifact - Almacenamiento (GB)", 0, 1000, 100 if env == "Producción" else (100 if env == "Desarrollo (DEV)" else 100), help="Primeros 2 GB gratuitos", key=f"{env}_codeartifact_storage"),
-                'codeartifact_requests': st.number_input(f"{env} - CodeArtifact - Solicitudes/mes", 0, 10000000, 25000 if env == "Producción" else (100000 if env == "Desarrollo (DEV)" else 50000), help="Primeras 100,000 solicitudes gratuitas", key=f"{env}_codeartifact_requests"),
-                'codeartifact_intra': st.number_input(f"{env} - Transferencia Intra (GB)", 0.0, 10000.0, 0.0, help="0.01 USD/GB entrada + 0.01 USD/GB salida", key=f"{env}_codeartifact_intra"),
-                'codeartifact_outbound': st.number_input(f"{env} - Transferencia Saliente (GB)", 0.0, 10000.0, 100.0 if env == "Producción" else (100.0 if env == "Desarrollo (DEV)" else 100.0), help="0.09 USD/GB a Internet", key=f"{env}_codeartifact_outbound"),
-                'codedeploy_instances': st.number_input(f"{env} - CodeDeploy - Instancias", 0, 1000, 1, help="Número de instancias desplegadas", key=f"{env}_codedeploy_instances"),
-                'codedeploy_deployments': st.number_input(f"{env} - CodeDeploy - Despliegues/mes", 0, 1000000, 25000 if env == "Producción" else (100000 if env == "Desarrollo (DEV)" else 50000), help="Despliegues mensuales por instancia", key=f"{env}_codedeploy_deployments")
+                'codecommit_users': st.number_input(
+                    f"{env} - CodeCommit - Usuarios activos", 0, 10000,
+                    125 if env == "Producción" else (
+                    500 if env == "Desarrollo (DEV)" else (
+                    125 if env == "Pruebas (UAT)" else 250)),
+                    help="Primeros 5 usuarios gratuitos", key=f"{env}_codecommit_users"),
+                
+                'codepipeline_v1': st.number_input(
+                    f"{env} - CodePipeline V1 - Pipelines activos", 0, 50000, 0,
+                    help="Primer pipeline gratuito", key=f"{env}_codepipeline_v1"),
+                
+                'codepipeline_v2': st.number_input(
+                    f"{env} - CodePipeline V2 - Minutos ejecución", 0, 100000,
+                    25000 if env == "Producción" else (
+                    100000 if env == "Desarrollo (DEV)" else (
+                    25000 if env == "Pruebas (UAT)" else 50000)),
+                    help="Primeros 100 minutos gratuitos", key=f"{env}_codepipeline_v2"),
+                
+                'codeguru_repos': st.number_input(
+                    f"{env} - CodeGuru - Repositorios", 1, 5000,
+                    125 if env == "Producción" else (
+                    500 if env == "Desarrollo (DEV)" else (
+                    125 if env == "Pruebas (UAT)" else 250)),
+                    help="Número de repositorios analizados", key=f"{env}_codeguru_repos"),
+                
+                'codeguru_lines': st.number_input(
+                    f"{env} - CodeGuru - Líneas/repositorio", 1, 1000000, 10000,
+                    help="Líneas de código por repositorio", key=f"{env}_codeguru_lines"),
+                
+                'codebuild_builds': st.number_input(
+                    f"{env} - CodeBuild - Builds/mes", 0, 10000000,
+                    25000 if env == "Producción" else (
+                    100000 if env == "Desarrollo (DEV)" else (
+                    25000 if env == "Pruebas (UAT)" else 50000)),
+                    help="Número total de builds mensuales", key=f"{env}_codebuild_builds"),
+                
+                'codebuild_duration': st.number_input(
+                    f"{env} - CodeBuild - Duración (min)", 0, 600, 5,
+                    help="Duración promedio por build", key=f"{env}_codebuild_duration"),
+                
+                'codeartifact_storage': st.number_input(
+                    f"{env} - CodeArtifact - Almacenamiento (GB)", 0, 1000, 100,
+                    help="Primeros 2 GB gratuitos", key=f"{env}_codeartifact_storage"),
+                
+                'codeartifact_requests': st.number_input(
+                    f"{env} - CodeArtifact - Solicitudes/mes", 0, 10000000,
+                    25000 if env == "Producción" else (
+                    100000 if env == "Desarrollo (DEV)" else (
+                    25000 if env == "Pruebas (UAT)" else 50000)),
+                    help="Primeras 100,000 solicitudes gratuitas", key=f"{env}_codeartifact_requests"),
+                
+                'codeartifact_intra': st.number_input(
+                    f"{env} - Transferencia Intra (GB)", 0.0, 10000.0, 0.0,
+                    help="0.01 USD/GB entrada + 0.01 USD/GB salida", key=f"{env}_codeartifact_intra"),
+                
+                'codeartifact_outbound': st.number_input(
+                    f"{env} - Transferencia Saliente (GB)", 0.0, 10000.0, 100.0,
+                    help="0.09 USD/GB a Internet", key=f"{env}_codeartifact_outbound"),
+                
+                'codedeploy_instances': st.number_input(
+                    f"{env} - CodeDeploy - Instancias", 0, 1000, 1,
+                    help="Número de instancias desplegadas", key=f"{env}_codedeploy_instances"),
+                
+                'codedeploy_deployments': st.number_input(
+                    f"{env} - CodeDeploy - Despliegues/mes", 0, 1000000,
+                    25000 if env == "Producción" else (
+                    100000 if env == "Desarrollo (DEV)" else (
+                    25000 if env == "Pruebas (UAT)" else 50000)),
+                    help="Despliegues mensuales por instancia", key=f"{env}_codedeploy_deployments")
             }
 
 # Calcular costos para cada entorno
