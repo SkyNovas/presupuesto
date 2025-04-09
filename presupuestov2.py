@@ -196,7 +196,7 @@ if selected_environments:
     st.dataframe(detailed_df)
     st.markdown("---")
 
-    # --- Visualizaciones ---
+        # --- Visualizaciones ---
     st.subheader("Visualizaciones Comparativas")
     cols = st.columns(len(selected_environments))
     for i, env in enumerate(selected_environments):
@@ -206,11 +206,11 @@ if selected_environments:
             
             fig_bar = px.bar(df_viz, x='Servicio', y='Costo', color='Servicio',
                             title="Distribución de Costos", text_auto='.2s')
-            st.plotly_chart(fig_bar, use_container_width=True)
+            st.plotly_chart(fig_bar, use_container_width=True, key=f"{env}_bar")
             
             fig_pie = px.pie(df_viz, names='Servicio', values='Costo',
                             title="Distribución Porcentual", hole=0.4)
-            st.plotly_chart(fig_pie, use_container_width=True)
+            st.plotly_chart(fig_pie, use_container_width=True, key=f"{env}_pie")
     st.markdown("---")
 
 else:
