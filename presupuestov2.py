@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import streamlit.components.v1 as components
 
 def highlight_second_max(s, color='yellow'):
     '''
@@ -14,9 +15,9 @@ def highlight_second_max(s, color='yellow'):
 def calculate_costs(inputs):
     costs = {}
 
-    # CodeCommit
-    users = inputs['codecommit_users']
-    costs['CodeCommit'] = max(users - 5, 0) * 1.00
+    # GITLAB
+    users = inputs['gitlab_users']
+    costs['GITLAB'] = max(users - 0, 0) * 24.58
 
     # CodePipeline
     v1_pipelines = inputs['codepipeline_v1']
@@ -80,12 +81,12 @@ with st.sidebar:
     for env in environments:
         with st.expander(f"Configuración {env}"):
             environment_inputs[env] = {
-                'codecommit_users': st.number_input(
-                    f"{env} - CodeCommit - Usuarios activos", 0, 10000,
+                'gitlab_users': st.number_input(
+                    f"{env} - GITLAB - Usuarios activos", 0, 10000,
                     125 if env == "Producción" else (
                     500 if env == "Desarrollo (DEV)" else (
                     125 if env == "Pruebas (UAT)" else 250)),
-                    help="Primeros 5 usuarios gratuitos", key=f"{env}_codecommit_users"),
+                    help="Primeros 5 usuarios gratuitos", key=f"{env}_gitlab_users"),
                 
                 'codepipeline_v1': st.number_input(
                     f"{env} - CodePipeline V1 - Pipelines activos", 0, 50000, 0,
@@ -167,13 +168,69 @@ if selected_environments:
             total_cost = sum(environment_costs[env].values())
             most_expensive = max(environment_costs[env], key=environment_costs[env].get) if environment_costs[env] else "N/A"
             max_individual = max(environment_costs[env].values()) if environment_costs[env] else "N/A"
+            total_cost_anual = total_cost * 12
             metrics_data[env] = {
                 "Costo Total Mensual": f"${total_cost:,.2f} USD",
-                "Servicio Más Costoso": most_expensive,
-                "Costo Máximo Individual": f"${max_individual:,.2f} USD",
+                "Costo Total Anual":  f"${total_cost_anual:,.2f} USD"
             }
     metrics_df = pd.DataFrame(metrics_data).T
     st.dataframe(metrics_df)
+    st.markdown("---")
+    
+    # --- GRÁFICA DE PASTEL COMPARATIVA ---
+    if "Desarrollo (DEV)" in selected_environments:
+        dev_monthly = sum(environment_costs["Desarrollo (DEV)"].values())
+        dev_annual = dev_monthly * 12
+        eco_actual = 275400.5
+        
+        # Calcular diferencia porcentual
+        diferencia = ((eco_actual - dev_annual) / eco_actual) * 100
+        color_diferencia = "#ffff00" if dev_annual < eco_actual else "#FF6B6B"
+        texto_diferencia = f"Ahorro: {abs(diferencia):.1f}%" if dev_annual < eco_actual else f"Incremento: +{abs(diferencia):.1f}%"
+        
+        # Crear DataFrame combinado
+        df_pie = pd.DataFrame({
+            'Categoría': ['Ecosistema Actual', 'Desarrollo (DEV)', 'Diferencia'],
+            'Valor': [eco_actual, dev_annual, abs(eco_actual - dev_annual)]
+        })
+        
+        # Crear gráfico de pastel
+        fig = px.pie(
+            df_pie,
+            names='Categoría',
+            values='Valor',
+            color='Categoría',
+            color_discrete_map={
+                'Ecosistema Actual': '#FF6B6B',
+                'Desarrollo (DEV)': '#66BB6A',
+                'Diferencia': color_diferencia
+            },
+            hole=0.2,
+            title="Distribución de Costos Anuales",
+        )
+        
+        # Personalizar etiquetas
+        fig.update_traces(
+            textinfo='percent+label',
+            texttemplate='%{label}<br>$%{value:,.2f} (%{percent})',
+            marker=dict(line=dict(color='white', width=2)),
+            hovertemplate='%{label}: $%{value:,.2f}<extra></extra>'
+        )
+        
+        # Ajustar posición de leyenda
+        fig.update_layout(
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.2,
+                xanchor="center",
+                x=0.5
+            )
+        )
+        
+        
+        st.plotly_chart(fig, use_container_width=True)
+    
     st.markdown("---")
 
     # --- Desglose Detallado con Totales ---
@@ -219,9 +276,9 @@ else:
 # Explicación de cálculos
 with st.expander("🧮 Detalles de Cálculo"):
     st.markdown("""
-    **CodeCommit:**
+    **GITLAB:**
     ```python
-    Costo = max(Usuarios - 5, 0) × 1.00 USD
+    Costo = max(Usuarios - 0, 0) × 29.48 USD
     ```
 
     **CodePipeline:**
