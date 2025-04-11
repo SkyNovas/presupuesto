@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import streamlit.components.v1 as components
 
 def highlight_second_max(s, color='yellow'):
     '''
