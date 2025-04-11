@@ -31,6 +31,7 @@ def calculate_costs(inputs):
     costs['CodeGuru'] = 10.00 + max(tiers - 1, 0) * 30.00
 
     # CodeBuild
+    
     builds = inputs['codebuild_builds']
     duration = inputs['codebuild_duration']
     duration_sec = duration * 60
